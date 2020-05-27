@@ -19,6 +19,7 @@ import { required, validDate } from '../../../../validators';
 
 import ValidationSummary from '../ValidationSummary';
 
+import { AUcheckbox } from '@gov.au/control-input'
 import PageAlert from '@gov.au/page-alerts';
 
 import recruiterStyles from './RecruiterForm.css';
@@ -35,11 +36,34 @@ class RecruiterForm extends BaseForm {
     }
     
     state = {
+        checkboxLabel: '',
+        confirmMessage: '',
         recruiter: this.props[this.props.model].recruiter,
         loaded: false
     }
 
+    checkboxLabelWhenRecruiterConsultant = 'I understand that once my business is updated to both recruitment and consultancy in the Digital Marketplace, I will lose my current category approvals. I must request assessment from my dashboard and be approved in the relevant categories before I can respond to opportunities.'
+    checkboxLabelWhenConsultant = 'I understand that once my business is updated to a consultancy in the Digital Marketplace, I will lose my current category approvals. I must request assessment from my dashboard and be approved in the relevant categories before I can respond to opportunities.'
+    confirmMessageWhenRecruiterConsultant = 'Confirm you understand that if you submit your business as both recruitment and consultancy, you cannot respond to opportunities until you request an assessment and are approved for the relevant categories.'
+    confirmMessageWhenConsultant = 'Confirm you understand that if you submit your business as a consultancy, you cannot respond to opportunities until you request an assessment and are approved for the relevant categories.'
+
     componentDidMount() {
+        const { recruiter } = this.state
+
+        if (recruiter === 'both') {
+            this.setState({
+                checkboxLabel: this.checkboxLabelWhenRecruiterConsultant,
+                confirmMessage: this.confirmMessageWhenRecruiterConsultant
+            })
+        }
+
+        if (recruiter === 'no') {
+            this.setState({
+                checkboxLabel: this.checkboxLabelWhenConsultant,
+                confirmMessage: this.confirmMessageWhenConsultant
+            })
+        }
+
         this.setState({loaded: true})
     }
 
@@ -50,10 +74,22 @@ class RecruiterForm extends BaseForm {
             recruiter: e.target.value
         })
 
+        if (e.target.value === 'both') {
+            this.setState({
+                checkboxLabel: this.checkboxLabelWhenRecruiterConsultant,
+                confirmMessage: this.confirmMessageWhenRecruiterConsultant
+            })
+        }
+
         if (e.target.value === 'no') {
             states.forEach(s => {
                 updateProperty(`${model}.labourHire.${s}.expiry`, null)
                 updateProperty(`${model}.labourHire.${s}.licenceNumber`, null)
+            })
+
+            this.setState({
+                checkboxLabel: this.checkboxLabelWhenConsultant,
+                confirmMessage: this.confirmMessageWhenConsultant
             })
         }
     }
@@ -119,8 +155,28 @@ class RecruiterForm extends BaseForm {
         return validators
     }
 
+   UnderstandsProcessCheckbox = props => {
+        const { checked } = props
+        const { model, updateProperty } = this.props
+        const { checkboxLabel } = this.state
+  
+        return (
+          <AUcheckbox
+            checked={checked}
+            id="understandsAssessmentProcess"
+            label={checkboxLabel}
+            name="understandsAssessmentProcess"
+            onChange={() => {}}
+            onClick={e => {
+              updateProperty(`${model}.understandsAssessmentProcess`, e.target.checked)
+            }}
+          />
+        )
+      }  
+
     render() {
         const {action, csrf_token, model, form, children, onSubmit, nextRoute, submitClicked, applicationErrors, type} = this.props;
+        const { confirmMessage, checkboxLabel } = this.state
         const { recruiter } = this.props[model]
 
         let hasFocused = false
@@ -164,13 +220,13 @@ class RecruiterForm extends BaseForm {
                                 </legend>
                                 <p>Recruiters provide candidates for digital specialist roles, but are not directly responsible for their work, performance or deliverables.
                                     Examples include temporary and contract recruitment.</p>
-                                {recruiter === 'both' && (
+                                {type === 'edit' && recruiter === 'both' && (
                                     <PageAlert as="warning" styleName="recruiterStyles.pageAlert">
                                         <h2 className="au-display-lg">Assessment process</h2>
                                         <p styleName="recruiterStyles.pageAlertContent">Businesses that do both recruitment and consultancy must submit evidence and be approved for relevant categories before they can apply for opportunities.</p>
                                     </PageAlert>
                                 )}
-                                {recruiter === 'no' && (
+                                {type === 'edit' && recruiter === 'no' && (
                                     <PageAlert as="warning" styleName="recruiterStyles.pageAlert">
                                         <h2 className="au-display-lg">Assessment process</h2>
                                         <p styleName="recruiterStyles.pageAlertContent">Businesses that provide services on a consultancy basis must submit evidence and be approved for relevant categories before they can apply for opportunities.</p>
@@ -248,24 +304,24 @@ class RecruiterForm extends BaseForm {
                                 </fieldset>
                             )}
                             {children}
-                            {(recruiter === 'both' || recruiter === 'no') && (
+                            {type === 'edit' && (recruiter === 'both' || recruiter === 'no') && (
                                 <React.Fragment>
                                     <StatefulError
                                         id="understandsAssessmentProcess"
                                         model={`${model}.understandsAssessmentProcess`}
                                         messages={{
-                                            required: 'Confirm you understand that once you preview and submit your updates, you will not be able to apply for opportunities until you have submitted evidence and been approved for relevant categories.'
+                                            required: 'Confirm you understand that once you submit these updates, you cannot respond to opportunities until you request an assessment and are approved for the relevant categories.'
                                         }}
                                     />
                                     <Control.checkbox
+                                        component={this.UnderstandsProcessCheckbox}
+                                        id="understandsAssessmentProcessControl"
+                                        mapProps={{
+                                            checked: prps => prps.modelValue
+                                        }}
                                         model={`${model}.understandsAssessmentProcess`}
-                                        id="understandsAssessmentProcess"
-                                        name="understandsAssessmentProcess"
                                         validators={{ required }}
                                     />
-                                    <label htmlFor="understandsAssessmentProcess">
-                                        <p>I understand once I preview and submit my updates, I will not be able to apply for opportunities until I have submitted evidence and been approved for relevant categories.</p>
-                                    </label>
                                 </React.Fragment>
                             )}
                         </div>
