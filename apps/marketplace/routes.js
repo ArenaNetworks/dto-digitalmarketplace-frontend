@@ -43,6 +43,7 @@ import SellerAssessmentFlowPage from './pages/SellerAssessmentFlowPage'
 import SellerAssessmentCreatePage from './pages/SellerAssessmentCreatePage'
 import SellerAssessmentCompletedPage from './pages/SellerAssessmentCompletedPage'
 import SellerAssessmentFeedbackPage from './pages/SellerAssessmentFeedbackPage'
+import SellerAssessmentViewPage from './pages/SellerAssessmentViewPage'
 import TeamsPage from './pages/Teams/TeamsPage'
 import SellerEditFlowPage from './pages/SellerEditFlowPage'
 import BuyerAwardSellerPage from './pages/BuyerAwardSellerPage'
@@ -209,6 +210,11 @@ export const Routes = () => (
       restrictedTo="supplier"
       path={`${rootPath}/seller-assessment/:evidenceId/feedback`}
       component={SellerAssessmentFeedbackPage}
+    />
+    <PrivateRoute
+      restrictedTo="supplier"
+      path={`${rootPath}/seller-assessment/:evidenceId/view`}
+      component={SellerAssessmentViewPage}
     />
     <PrivateRoute
       restrictedTo="supplier"
