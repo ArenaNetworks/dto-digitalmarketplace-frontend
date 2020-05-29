@@ -1,5 +1,6 @@
 import {
   DOMAIN_LOAD_SUCCESS,
+  DOMAIN_EVIDENCE_LOAD_SUCCESS,
   EVIDENCE_CREATE_SUCCESS,
   EVIDENCE_LOAD_SUCCESS,
   EVIDENCE_FEEDBACK_LOAD_SUCCESS,
@@ -64,6 +65,36 @@ export const loadDomainData = domainId => dispatch => {
       dispatch(handleErrorFailure(response))
     } else {
       dispatch(handleDomainLoadSuccess(response))
+    }
+    dispatch(sendingRequest(false))
+    return response
+  })
+}
+
+export const handleLoadDomainEvidenceSuccess = response => ({
+  type: DOMAIN_EVIDENCE_LOAD_SUCCESS,
+  data: {
+    id: response.data.id,
+    domainId: response.data.domainId,
+    domainName: response.data.domain_name,
+    domainCriteria: response.data.domain_criteria,
+    supplierCode: response.data.supplierCode,
+    maxDailyRate: response.data.maxDailyRate,
+    submittedAt: response.data.submitted_at,
+    criteria: response.data.criteria,
+    evidence: response.data.evidence,
+    status: response.data.status,
+    created_at: response.data.created_at
+  }
+})
+
+export const loadDomainEvidenceData = evidenceId => dispatch => {
+  dispatch(sendingRequest(true))
+  return dmapi({ url: `/evidence/${evidenceId}/view` }).then(response => {
+    if (!response || response.error) {
+      dispatch(handleErrorFailure(response))
+    } else {
+      dispatch(handleLoadDomainEvidenceSuccess(response))
     }
     dispatch(sendingRequest(false))
     return response
