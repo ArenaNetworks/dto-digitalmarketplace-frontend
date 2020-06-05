@@ -37,30 +37,25 @@ class RecruiterForm extends BaseForm {
     
     state = {
         checkboxLabel: '',
-        confirmMessage: '',
         recruiter: this.props[this.props.model].recruiter,
         loaded: false
     }
 
     checkboxLabelWhenRecruiterConsultant = 'I understand that once my business is updated to both recruitment and consultancy in the Digital Marketplace, I will lose my current category approvals. I must request assessment from my dashboard and be approved in the relevant categories before I can respond to opportunities.'
     checkboxLabelWhenConsultant = 'I understand that once my business is updated to a consultancy in the Digital Marketplace, I will lose my current category approvals. I must request assessment from my dashboard and be approved in the relevant categories before I can respond to opportunities.'
-    confirmMessageWhenRecruiterConsultant = 'Confirm you understand that if you submit your business as both recruitment and consultancy, you cannot respond to opportunities until you request an assessment and are approved for the relevant categories.'
-    confirmMessageWhenConsultant = 'Confirm you understand that if you submit your business as a consultancy, you cannot respond to opportunities until you request an assessment and are approved for the relevant categories.'
 
     componentDidMount() {
         const { recruiter } = this.state
 
         if (recruiter === 'both') {
             this.setState({
-                checkboxLabel: this.checkboxLabelWhenRecruiterConsultant,
-                confirmMessage: this.confirmMessageWhenRecruiterConsultant
+                checkboxLabel: this.checkboxLabelWhenRecruiterConsultant
             })
         }
 
         if (recruiter === 'no') {
             this.setState({
-                checkboxLabel: this.checkboxLabelWhenConsultant,
-                confirmMessage: this.confirmMessageWhenConsultant
+                checkboxLabel: this.checkboxLabelWhenConsultant
             })
         }
 
@@ -77,7 +72,6 @@ class RecruiterForm extends BaseForm {
         if (e.target.value === 'both') {
             this.setState({
                 checkboxLabel: this.checkboxLabelWhenRecruiterConsultant,
-                confirmMessage: this.confirmMessageWhenRecruiterConsultant
             })
         }
 
@@ -89,7 +83,6 @@ class RecruiterForm extends BaseForm {
 
             this.setState({
                 checkboxLabel: this.checkboxLabelWhenConsultant,
-                confirmMessage: this.confirmMessageWhenConsultant
             })
         }
     }
@@ -155,7 +148,12 @@ class RecruiterForm extends BaseForm {
         return validators
     }
 
-   UnderstandsProcessCheckbox = props => {
+    showAssessmentWarning = () => {
+        const { supplier, type } = this.props
+        return type === 'edit' && supplier.recruiter === 'yes'
+    }
+
+    UnderstandsProcessCheckbox = props => {
         const { checked } = props
         const { model, updateProperty } = this.props
         const { checkboxLabel } = this.state
@@ -172,11 +170,10 @@ class RecruiterForm extends BaseForm {
             }}
           />
         )
-      }  
+    }  
 
     render() {
         const {action, csrf_token, model, form, children, onSubmit, nextRoute, submitClicked, applicationErrors, type} = this.props;
-        const { confirmMessage, checkboxLabel } = this.state
         const { recruiter } = this.props[model]
 
         let hasFocused = false
@@ -220,13 +217,13 @@ class RecruiterForm extends BaseForm {
                                 </legend>
                                 <p>Recruiters provide candidates for digital specialist roles, but are not directly responsible for their work, performance or deliverables.
                                     Examples include temporary and contract recruitment.</p>
-                                {type === 'edit' && recruiter === 'both' && (
+                                {this.showAssessmentWarning() && recruiter === 'both' && (
                                     <PageAlert as="warning" styleName="recruiterStyles.pageAlert">
                                         <h2 className="au-display-lg">Assessment process</h2>
                                         <p styleName="recruiterStyles.pageAlertContent">Businesses that do both recruitment and consultancy must submit evidence and be approved for relevant categories before they can apply for opportunities.</p>
                                     </PageAlert>
                                 )}
-                                {type === 'edit' && recruiter === 'no' && (
+                                {this.showAssessmentWarning() && recruiter === 'no' && (
                                     <PageAlert as="warning" styleName="recruiterStyles.pageAlert">
                                         <h2 className="au-display-lg">Assessment process</h2>
                                         <p styleName="recruiterStyles.pageAlertContent">Businesses that provide services on a consultancy basis must submit evidence and be approved for relevant categories before they can apply for opportunities.</p>
@@ -304,7 +301,7 @@ class RecruiterForm extends BaseForm {
                                 </fieldset>
                             )}
                             {children}
-                            {type === 'edit' && (recruiter === 'both' || recruiter === 'no') && (
+                            {this.showAssessmentWarning() && (recruiter === 'both' || recruiter === 'no') && (
                                 <React.Fragment>
                                     <StatefulError
                                         id="understandsAssessmentProcess"
