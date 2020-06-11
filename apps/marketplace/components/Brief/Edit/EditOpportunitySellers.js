@@ -133,6 +133,29 @@ class EditOpportunitySellers extends Component {
   render = () => {
     const { category, model } = this.props
     const { daysUntilOpportunityCloses, showClosingDateWarning } = this.state
+    const searchUri = category ? `/search/sellers?role=${encodeURIComponent(category)}&sort_by=a-z` : '/search/sellers'
+
+    const emptyResultsMessage = (
+      <li>
+        Seller cannot be found in this category.
+        <a
+          className={`${styles.hideMobile} ${styles.floatRight}`}
+          href={searchUri}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Search sellers
+        </a>
+        <a
+          className={`${styles.hideDesktop} ${styles.inlineBlock}`}
+          href={searchUri}
+          rel="noopener noreferrer"
+          target="_blank"
+        >
+          Search sellers
+        </a>
+      </li>
+    )
     const hasSelectedSellers = Object.keys(this.props[model].sellers).length > 0
     const searchUri = category ? `/search/sellers?role=${encodeURIComponent(category)}&sort_by=a-z` : '/search/sellers'
 
