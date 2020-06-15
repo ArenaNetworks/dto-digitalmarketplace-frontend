@@ -42,6 +42,10 @@ class DocumentsForm extends BaseForm {
     
     state = {
         errors: {},
+        indemnity: {
+            newDocumentUploaded: this.props.documentsForm.documents.indemnity && 
+                this.props.documentsForm.documents.indemnity.expiry ? false : true
+        },
         liability: {
             newDocumentUploaded: this.props.documentsForm.documents.liability && 
                 this.props.documentsForm.documents.liability.expiry ? false : true
@@ -56,11 +60,17 @@ class DocumentsForm extends BaseForm {
         {
             'label': 'Financial statement',
             'id': 'financial',
-            'description': 'Please provide an up-to-date financial statement. If you do not have this, ask your accountant for a letter confirming financial viability.',
+            'description': 'Please provide an up-to-date financial statement. If you do not have this, ask your accountant for a letter confirming financial viability. We will not accept an internal letter as proof of financial viability.',
             'expires': false
         },
         {
-            'label': 'Professional Indemnity and Public Liability Insurance',
+            'label': 'Professional Indemnity Insurance',
+            'id': 'indemnity',
+            'description': 'Your insurer can issue a certificate of currency.',
+            'expires': true
+        },
+        {
+            'label': 'Public Liability Insurance',
             'id': 'liability',
             'description': 'Your insurer can issue a certificate of currency.',
             'expires': true
@@ -151,20 +161,9 @@ class DocumentsForm extends BaseForm {
                 <header>
                     <ValidationSummary form={form} applicationErrors={applicationErrors} filterFunc={(ae) => ae.step === 'documents' && type === 'edit'} />
                     <h1 className="au-display-xl" tabIndex="-1">Upload your documents</h1>
-
                     <p>The details of your insurance documents and financial statement are not visible on your profile (other than the insurance expiry dates). These details may be shared with buyers on request, so make sure they are up to date.</p>
-                    <p>  Each should be no larger than 5MB and in PDF, PNG or JPEG format. If you have multiple files for a document, please scan and merge as one upload.
-                  </p>
+                    <p>Each should be no larger than 5MB and in PDF, PNG or JPEG format. If you have multiple files for a document, please scan and merge as one upload.</p>
                     <br />
-                    <div className="calloutMistake">
-                        <b> Avoid common mistakes </b>
-                        <ul className="mistake-list">
-                            <li><b>Financial statement</b> - ensure it is up to date. A letter from your accountant confirming financial viability is acceptable. We will not accept an internal letter as proof of financial viability.</li>
-                            <li><b>Professional Indemnity and Public Liability Insurance</b> - check expiration dates match the uploaded documentation.</li>
-                            <li><b>Workers Compensation</b> - check expiration dates match the uploaded documentation.</li>
-                        </ul>
-                    </div><br />
-
                 </header>
                 <article role="main">
                     <ErrorBox submitClicked={submitClicked} model={model} setFocus={setFocus} />
@@ -185,7 +184,7 @@ class DocumentsForm extends BaseForm {
                         onCustomSubmit={onSubmit}
                         onSubmitFailed={onSubmitFailed}
                         validators={{
-                            documents: (documents = {}) => minObjectLength(documents, 3) && documents.workers.noWorkersCompensation !== false
+                            documents: (documents = {}) => minObjectLength(documents, 4) && documents.workers.noWorkersCompensation !== false
                         }}
                     >
                         {csrf_token && (
