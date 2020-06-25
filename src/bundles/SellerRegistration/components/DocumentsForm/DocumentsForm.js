@@ -8,6 +8,8 @@ import isPast from 'date-fns/is_past';
 import isToday from 'date-fns/is_today';
 import parse from 'date-fns/parse';
 
+import { AUcheckbox } from '@gov.au/control-input'
+
 import Layout from '../../../../shared/Layout';
 import BaseForm from '../../../../shared/form/BaseForm';
 import SubmitForm from '../../../../shared/form/SubmitForm';
@@ -24,8 +26,30 @@ import { uploadDocument, submitApplication } from '../../redux/modules/applicati
 import { minObjectLength, validDate } from '../../../../validators';
 import ValidationSummary from '../ValidationSummary';
 
-import './DocumentsForm.css';
+import styles from './DocumentsForm.css';
 
+const InsuranceCheckbox = props => {
+    const { copyDocument, documents, id, label, model } = props
+    
+    let documentToCopy = {}
+    if (id === 'indemnity') {
+        documentToCopy = documents.liability
+    } else if (id === 'liability') {
+        documentToCopy = documents.indemnity
+    }
+
+    return (
+        <AUcheckbox
+            label={label}
+            id={`${id}-checkbox`}
+            name={`${id}-checkbox`}
+            defaultChecked={false}
+            onClick={() => {
+                copyDocument(model, id, documentToCopy)
+            }}
+        />
+    )
+}
 
 class DocumentsForm extends BaseForm {
 
@@ -148,7 +172,24 @@ class DocumentsForm extends BaseForm {
     }
 
     render() {
-        const { action, csrf_token, model, form, documentsForm, onSubmit, onSubmitFailed, match, buttonText, nextRoute, submitClicked, applicationErrors, type } = this.props;
+        const {
+            action,
+            applicationErrors,
+            buttonText,
+            copyDocument,
+            csrf_token,
+            documentsForm,
+            form,
+            match,
+            model,
+            nextRoute,
+            onSubmit,
+            onSubmitFailed,
+            submitClicked,
+            type
+        } = this.props
+        const { documents } = documentsForm
+
         let hasFocused = false
         const setFocus = e => {
             if (!hasFocused) {
@@ -163,7 +204,6 @@ class DocumentsForm extends BaseForm {
                     <h1 className="au-display-xl" tabIndex="-1">Upload your documents</h1>
                     <p>The details of your insurance documents and financial statement are not visible on your profile (other than the insurance expiry dates). These details may be shared with buyers on request, so make sure they are up to date.</p>
                     <p>Each should be no larger than 5MB and in PDF, PNG or JPEG format. If you have multiple files for a document, please scan and merge as one upload.</p>
-                    <br />
                 </header>
                 <article role="main">
                     <ErrorBox submitClicked={submitClicked} model={model} setFocus={setFocus} />
@@ -200,10 +240,27 @@ class DocumentsForm extends BaseForm {
                             const errors = this.state.errors[key];
                             const url = doc.application_id ? `/sellers/application/${doc.application_id}/documents/${doc.filename}` : match.url.slice(1);
 
+                            let insuranceCheckboxLabel = ''
+                            if (key === 'indemnity') {
+                                insuranceCheckboxLabel = 'I have included the Professional Indemnity Insurance in the Public Liability Insurance document.'
+                            } else if (key === 'liability') {
+                                insuranceCheckboxLabel = 'I have included the Public Liability Insurance in the Professional Indemnity Insurance document.'
+                            }
+
+                            let showInsuranceCheckbox = false
+                            if (isEmpty(documents.indemnity) && isEmpty(documents.liability)) {
+                                showInsuranceCheckbox = false
+                            } else if (
+                                (key === 'indemnity' && isEmpty(documents.indemnity) && !isEmpty(documents.liability)) ||
+                                (key === 'liability' && isEmpty(documents.liability) && !isEmpty(documents.indemnity))) {
+
+                                showInsuranceCheckbox = true
+                            }
+
                             return (
-                                <div key={key} className="callout-no-margin">
-                                    <p styleName="question-heading">{field.label}</p>
-                                    <span>{field.description}</span>
+                                <div key={key} styleName="styles.document">
+                                    <h3 styleName="question-heading">{field.label}</h3>
+                                    <span styleName="styles.documentDescription">{field.description}</span>
 
                                     <div>
                                         {errors && <span className="validation-message">There was an error uploading the file</span>}
@@ -215,6 +272,16 @@ class DocumentsForm extends BaseForm {
                                                     <label id={`label_${key}`} htmlFor={key} styleName="custom-input"> {isEmpty(name) && "Choose file"} </label>
                                                 </p>
                                             </div>
+                                        }
+
+                                        {showInsuranceCheckbox && !fieldState.uploading && !fieldState.file &&
+                                            <InsuranceCheckbox
+                                                copyDocument={copyDocument}
+                                                documents={documents}
+                                                id={key}
+                                                label={insuranceCheckboxLabel}
+                                                model={model}
+                                            />
                                         }
 
                                         {!isEmpty(doc.filename) &&
@@ -306,6 +373,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => {
     return {
+        copyDocument: (model, id, value) => {
+            return dispatch(actions.change(`${model}.documents.${id}`, value))
+        },
         onUpload: (id, data) => {
             return dispatch(uploadDocument(id, data));
         },
