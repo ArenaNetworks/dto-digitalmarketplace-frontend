@@ -618,7 +618,7 @@ const Opportunity = props => {
               )}
             </React.Fragment>
           )}
-          {(isInvited || isBuyer) && (
+          {!isRecruiterOnly && (isInvited || isBuyer) && (
             <QuestionAnswer
               questions={brief.clarificationQuestions}
               clarificationQuestionsAreClosed={brief.clarificationQuestionsAreClosed}
