@@ -1,4 +1,5 @@
 import {
+  CASE_STUDIES_LOAD_SUCCESS,
   DOMAIN_LOAD_SUCCESS,
   DOMAIN_EVIDENCE_LOAD_SUCCESS,
   EVIDENCE_CREATE_SUCCESS,
@@ -45,6 +46,26 @@ export const handleErrorFailure = response => dispatch => {
   }
 }
 
+export const handleCaseStudiesSuccess = response => ({
+  type: CASE_STUDIES_LOAD_SUCCESS,
+  data: {
+    caseStudies: response.data
+  }
+})
+
+export const loadCaseStudiesData = domainId => dispatch => {
+  dispatch(sendingRequest(true))
+  return dmapi({ url: `/case-studies/${domainId}/view` }).then(response => {
+    if (!response || response.error) {
+      dispatch(handleErrorFailure(response))
+    } else {
+      dispatch(handleCaseStudiesSuccess(response))
+    }
+    dispatch(sendingRequest(false))
+    return response
+  })
+}
+
 export const handleDomainLoadSuccess = response => ({
   type: DOMAIN_LOAD_SUCCESS,
   data: {
@@ -84,7 +105,7 @@ export const handleLoadDomainEvidenceSuccess = response => ({
     criteria: response.data.criteria,
     evidence: response.data.evidence,
     status: response.data.status,
-    created_at: response.data.created_at
+    createdAt: response.data.created_at
   }
 })
 
