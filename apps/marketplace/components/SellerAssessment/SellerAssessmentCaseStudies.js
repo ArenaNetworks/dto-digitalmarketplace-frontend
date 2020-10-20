@@ -9,9 +9,15 @@ const SellerAssessmentCaseStudies = props => (
     <AUdirectionLink link={`${rootPath}/seller-dashboard/categories`} text="back to dashboard" direction="left" />
 
     {props.caseStudies &&
-      props.caseStudies.map(value => (
+      props.caseStudies.map((value, index) => (
         <React.Fragment key={value}>
-          <AUheading level="2" size="lg">
+          {index === 0 && (
+            <AUheading level="1" size="xl">
+              {value.name} case study
+              <div className={styles.spacer} />
+            </AUheading>
+          )}
+          <AUheading level="1" size="lg">
             {value.data.title}
           </AUheading>
 
@@ -24,8 +30,8 @@ const SellerAssessmentCaseStudies = props => (
             Referee details
           </AUheading>
           <p className={styles.reviewText}>{value.data.referee_name}</p>
-          <p className={styles.reviewText}>{value.data.referee_email}</p>
           <p className={styles.reviewText}>{value.data.referee_position}</p>
+          <p className={styles.reviewText}>{value.data.referee_email}</p>
 
           <AUheading level="2" size="md">
             Project date
@@ -33,7 +39,7 @@ const SellerAssessmentCaseStudies = props => (
           <p className={styles.reviewText}>{value.data.timeframe}</p>
 
           <AUheading level="2" size="md">
-            Responisble for
+            Responsible for
           </AUheading>
           <p className={styles.reviewText}>{value.data.roles}</p>
 
@@ -51,6 +57,7 @@ const SellerAssessmentCaseStudies = props => (
             Outcomes and benefits
           </AUheading>
           <p className={styles.reviewText}>{value.data.outcome}</p>
+          <div className={styles.spacer} />
         </React.Fragment>
       ))}
   </div>

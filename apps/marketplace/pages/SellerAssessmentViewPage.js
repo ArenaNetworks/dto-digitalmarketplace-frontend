@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import ErrorBox from 'shared/form/ErrorBox'
 import LoadingIndicatorFullPage from 'shared/LoadingIndicatorFullPage/LoadingIndicatorFullPage'
 import SellerAssessmentView from 'marketplace/components/SellerAssessment/SellerAssessmentView'
 import { loadDomainEvidenceData } from '../actions/supplierActions'
@@ -35,13 +36,15 @@ class SellerAssessmentViewPage extends Component {
     if (this.state.loading) {
       return <LoadingIndicatorFullPage />
     }
+    if (!this.props.evidence) {
+      return <ErrorBox title="There was a problem retrieving your evidence" />
+    }
     return <SellerAssessmentView evidence={this.props.evidence} />
   }
 }
 
 const mapStateToProps = state => ({
-  domain: state.domain.domain,
-  evidence: state.evidence
+  evidence: state.evidence.evidence
 })
 
 const mapDispatchToProps = dispatch => ({
