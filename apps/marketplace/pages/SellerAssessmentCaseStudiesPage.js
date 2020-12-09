@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
+import ErrorBox from 'shared/form/ErrorBox'
 import LoadingIndicatorFullPage from 'shared/LoadingIndicatorFullPage/LoadingIndicatorFullPage'
 import SellerAssessmentCaseStudies from '../components/SellerAssessment/SellerAssessmentCaseStudies'
 import { loadCaseStudiesData } from '../actions/supplierActions'
@@ -34,6 +35,9 @@ class SellerAssessmentCaseStudiesPage extends Component {
   render() {
     if (this.state.loading) {
       return <LoadingIndicatorFullPage />
+    }
+    if (!this.props.caseStudies) {
+      return <ErrorBox title="There was a problem retrieving your case studies" />
     }
     return <SellerAssessmentCaseStudies caseStudies={this.props.caseStudies} />
   }
